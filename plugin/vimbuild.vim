@@ -71,7 +71,11 @@ function! s:vimbuild(q_args) abort
     try
         call s:configuration()
         let opt = #{ cwd: expand(g:vimbuild_cwd), }
-        call term_start([(s:batfile)] + split(a:q_args, '\s\+'), opt)
+        let xs = split(a:q_args, '\s\+')
+        if -1 == index(['x86', 'x64'], get(xs, 0, ''))
+            let xs = ['x86'] + xs
+        endif
+        call term_start([(s:batfile)] + xs, opt)
     catch
         echohl Error
         echo v:exception
