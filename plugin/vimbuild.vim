@@ -10,7 +10,7 @@ let s:batfile = resolve(expand('<sfile>:h:h') .. '\vimbuild.bat')
 function! s:configuration() abort
     let g:vimbuild_cwd = get(g:, 'vimbuild_cwd', '')
     let g:vimbuild_term_rows = get(g:, 'vimbuild_term_rows', 10)
-    let g:vimbuild_term_cols = get(g:, 'vimbuild_term_rows', 100)
+    let g:vimbuild_term_cols = get(g:, 'vimbuild_term_cols', 100)
     let g:vimbuild_term_waittime = get(g:, 'vimbuild_term_waittime', 500)
     let g:vimbuild_vimargs = get(g:, 'vimbuild_vimargs', ['-u', 'NONE', '-N', '--not-a-term', '--noplugin', '--cmd', 'set noswapfile'])
     if !isdirectory(expand(g:vimbuild_cwd))
