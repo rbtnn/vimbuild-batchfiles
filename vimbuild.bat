@@ -3,39 +3,38 @@ setlocal enabledelayedexpansion
 
 if "%1"=="x86" set BUILD_ARCH=x86
 if "%1"=="x64" set BUILD_ARCH=x64
-if "%BUILD_ARCH%"=="" goto :FINISH
-
-set USERNAME=rbtnn
-set VIMOPT= SDK_INCLUDE_DIR="%ProgramFiles(x86)%\Microsoft SDKs\Windows\v7.1A\Include" %2 %3 %4 %5 %6 %7 %8 %9
-
-set MSVC=%ProgramFiles(x86)%\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.22.27905
-set WINDOWSKITS10=%ProgramFiles(x86)%\Windows Kits\10
-set WINDOWSKITS10_VER=10.0.17763.0
-
-set INCLUDE=%MSVC%\ATLMFC\include
-set INCLUDE=%INCLUDE%;%MSVC%\include
-set INCLUDE=%INCLUDE%;%WINDOWSKITS10%\include\%WINDOWSKITS10_VER%\ucrt
-set INCLUDE=%INCLUDE%;%WINDOWSKITS10%\include\%WINDOWSKITS10_VER%\shared
-set INCLUDE=%INCLUDE%;%WINDOWSKITS10%\include\%WINDOWSKITS10_VER%\um
-set INCLUDE=%INCLUDE%;%WINDOWSKITS10%\include\%WINDOWSKITS10_VER%\winrt
-set INCLUDE=%INCLUDE%;%WINDOWSKITS10%\include\%WINDOWSKITS10_VER%\cppwinrt
-
-set LIBPATH=%MSVC%\ATLMFC\lib\%BUILD_ARCH%
-set LIBPATH=%LIBPATH%;%MSVC%\lib\%BUILD_ARCH%
-set LIBPATH=%LIBPATH%;%MSVC%\lib\%BUILD_ARCH%\store\references
-set LIBPATH=%LIBPATH%;%WINDOWSKITS10%\UnionMetadata\%WINDOWSKITS10_VER%
-set LIBPATH=%LIBPATH%;%WINDOWSKITS10%\References\%WINDOWSKITS10_VER%
-
-set LIB=%MSVC%\ATLMFC\lib\%BUILD_ARCH%
-set LIB=%LIB%;%MSVC%\lib\%BUILD_ARCH%
-set LIB=%LIB%;%WINDOWSKITS10%\Lib\%WINDOWSKITS10_VER%\um\%BUILD_ARCH%
-set LIB=%LIB%;%WINDOWSKITS10%\Lib\%WINDOWSKITS10_VER%\ucrt\%BUILD_ARCH%
-
-SET PATH=%MSVC%\bin\Host%BUILD_ARCH%\%BUILD_ARCH%
-SET PATH=%PATH%;%WINDOWSKITS10%\bin\%WINDOWSKITS10_VER%\%BUILD_ARCH%
-
 if "%BUILD_ARCH%"=="x64" set VIM_CPU=AMD64
 if "%BUILD_ARCH%"=="x86" set VIM_CPU=i386
+if "%BUILD_ARCH%"==""    goto :FINISH
+
+set INCLUDE=
+set LIBPATH=
+set LIB=
+set PATH=C:\WINDOWS\system32
+set VCVARS=
+set VIMOPT= SDK_INCLUDE_DIR="%ProgramFiles(x86)%\Microsoft SDKs\Windows\v7.1A\Include" %2 %3 %4 %5 %6 %7 %8 %9
+set CACHE=%~dp0\%BUILD_ARCH%.bat
+
+if exist "%CACHE%" (
+    call "%CACHE%"
+    goto :BUILD
+)
+
+if "%VCVARS%"=="" (
+    for /F "usebackq delims==" %%i in (`where /r "%ProgramFiles(x86)%" vcvarsall.bat`) do ( if "%VCVARS%"=="" (set VCVARS=%%i) )
+)
+if "%VCVARS%"=="" (
+    for /F "usebackq delims==" %%i in (`where /r "%ProgramFiles%"      vcvarsall.bat`) do ( if "%VCVARS%"=="" (set VCVARS=%%i) )
+)
+call "%VCVARS%" %BUILD_ARCH%
+
+echo set INCLUDE=%INCLUDE%  > %CACHE%
+echo set LIBPATH=%LIBPATH% >> %CACHE%
+echo set LIB=%LIB%         >> %CACHE%
+echo set PATH=%PATH%       >> %CACHE%
+
+:BUILD
+
 nmake /nologo /f Make_mvc.mak %VIMOPT% CPU=%VIM_CPU%
 
 :FINISH
