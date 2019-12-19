@@ -9,9 +9,10 @@ let s:batfile = resolve(expand('<sfile>:h:h') .. '\vimbuild.bat')
 
 function! s:configuration() abort
     let g:vimbuild_cwd = get(g:, 'vimbuild_cwd', '')
-    let g:vimbuild_term_rows = get(g:, 'vimbuild_term_rows', 10)
+    let g:vimbuild_buildargs = get(g:, 'vimbuild_buildargs', '')
+    let g:vimbuild_term_rows = get(g:, 'vimbuild_term_rows', 100)
     let g:vimbuild_term_cols = get(g:, 'vimbuild_term_cols', 100)
-    let g:vimbuild_term_waittime = get(g:, 'vimbuild_term_waittime', 500)
+    let g:vimbuild_term_waittime = get(g:, 'vimbuild_term_waittime', 3000)
     let g:vimbuild_vimargs = get(g:, 'vimbuild_vimargs', ['-u', 'NONE', '-N', '--not-a-term', '--noplugin', '--cmd', 'set noswapfile'])
     if !isdirectory(expand(g:vimbuild_cwd))
         throw "please set vim repository's src directory to g:vimbuild_cwd"
@@ -75,7 +76,7 @@ function! s:vimbuild(q_args) abort
         if -1 == index(['x86', 'x64'], get(xs, 0, ''))
             let xs = ['x86'] + xs
         endif
-        call term_start([(s:batfile)] + xs, opt)
+        call term_start([(s:batfile)] + [xs[0]] + [(g:vimbuild_buildargs)] + [' ' .. join(xs[1:])], opt)
     catch
         echohl Error
         echo v:exception

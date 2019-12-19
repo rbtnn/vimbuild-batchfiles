@@ -12,7 +12,7 @@ set LIBPATH=
 set LIB=
 set PATH=C:\WINDOWS\system32
 set VCVARS=
-set VIMOPT= SDK_INCLUDE_DIR="%ProgramFiles(x86)%\Microsoft SDKs\Windows\v7.1A\Include" %2 %3 %4 %5 %6 %7 %8 %9
+set VIMOPT=USE_WIN32MAK=no CPU=%VIM_CPU% %~2 %~3 %~4 %~5 %~6 %~7 %~8 %~9
 set CACHE=%~dp0\%BUILD_ARCH%.bat
 
 if exist "%CACHE%" (
@@ -35,7 +35,8 @@ echo set PATH=%PATH%       >> %CACHE%
 
 :BUILD
 
-nmake /nologo /f Make_mvc.mak %VIMOPT% CPU=%VIM_CPU%
+@echo on
+nmake /nologo /f Make_mvc.mak %VIMOPT%
 
 :FINISH
 
