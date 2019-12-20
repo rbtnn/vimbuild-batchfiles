@@ -5,70 +5,20 @@ if !has('win32') || !has('terminal')
     finish
 endif
 
-let s:batfile = resolve(expand('<sfile>:h:h') .. '\vimbuild.bat')
+let s:batfile_build = resolve(expand('<sfile>:h:h') .. '\vimbuild_build.bat')
+let s:batfile_test = resolve(expand('<sfile>:h:h') .. '\vimbuild_test.bat')
 
 function! s:configuration() abort
     let g:vimbuild_cwd = get(g:, 'vimbuild_cwd', '')
     let g:vimbuild_buildargs = get(g:, 'vimbuild_buildargs', '')
-    let g:vimbuild_term_rows = get(g:, 'vimbuild_term_rows', 100)
-    let g:vimbuild_term_cols = get(g:, 'vimbuild_term_cols', 100)
-    let g:vimbuild_term_waittime = get(g:, 'vimbuild_term_waittime', 3000)
+    let g:vimbuild_testargs = get(g:, 'vimbuild_testargs', '')
     let g:vimbuild_vimargs = get(g:, 'vimbuild_vimargs', ['-u', 'NONE', '-N', '--not-a-term', '--noplugin', '--cmd', 'set noswapfile'])
     if !isdirectory(expand(g:vimbuild_cwd))
         throw "please set vim repository's src directory to g:vimbuild_cwd"
     endif
 endfunction
 
-function! s:vimbuild_viminterminal() abort
-    try
-        call s:configuration()
-        let vimexe = expand(g:vimbuild_cwd .. '/vim.exe', v:true)
-        if !filereadable(vimexe)
-            throw 'could not find vim.exe'
-        endif
-        let cmd = [vimexe] + g:vimbuild_vimargs
-        call term_start(cmd)
-    catch
-        echohl Error
-        echo v:exception
-        echohl None
-    endtry
-endfunction
-
-function! s:vimbuild_termdump() abort
-    let dump = tempname()
-    let script = tempname()
-    try
-        call s:configuration()
-        let vimexe = expand(g:vimbuild_cwd .. '/vim.exe', v:true)
-        if !filereadable(vimexe)
-            throw 'could not find vim.exe'
-        endif
-        let cmd = [vimexe] + g:vimbuild_vimargs + ['--cmd', ('source ' .. script)]
-        let opt = #{ term_finish : 'close', term_rows : g:vimbuild_term_rows, term_cols : g:vimbuild_term_cols, }
-        call writefile(getline(1, '$'), script)
-        tabnew
-        vsplit
-        let bnr = term_start(cmd, opt)
-        only
-        call term_wait(bnr, g:vimbuild_term_waittime)
-        call term_dumpwrite(bnr, dump)
-        call job_stop(term_getjob(bnr), 'kill')
-        call term_dumpload(dump)
-    catch
-        echohl Error
-        echo v:exception
-        echohl None
-    finally
-        for x in [dump, script]
-            if filereadable(x)
-                call delete(x)
-            endif
-        endfor
-    endtry
-endfunction
-
-function! s:vimbuild(q_args) abort
+function! s:vimbuild(batfile, q_args) abort
     try
         call s:configuration()
         let opt = #{ cwd: expand(g:vimbuild_cwd), }
@@ -76,7 +26,12 @@ function! s:vimbuild(q_args) abort
         if -1 == index(['x86', 'x64'], get(xs, 0, ''))
             let xs = ['x86'] + xs
         endif
-        call term_start([(s:batfile)] + [xs[0]] + [(g:vimbuild_buildargs)] + [' ' .. join(xs[1:])], opt)
+        if a:batfile == s:batfile_build
+            call term_start([(a:batfile)] + [xs[0]] + [(g:vimbuild_buildargs)] + [' ' .. join(xs[1:])], opt)
+        endif
+        if a:batfile == s:batfile_test
+            call term_start([(a:batfile)] + [xs[0]] + [(g:vimbuild_testargs)] + [' ' .. join(xs[1:])], opt)
+        endif
     catch
         echohl Error
         echo v:exception
@@ -84,7 +39,19 @@ function! s:vimbuild(q_args) abort
     endtry
 endfunction
 
-command! -nargs=*   VimBuild               :call <SID>vimbuild(<q-args>)
-command! -nargs=*   VimBuildVimInTerminal  :call <SID>vimbuild_viminterminal()
-command! -nargs=*   VimBuildTermDump       :call <SID>vimbuild_termdump()
+function! VimBuildTestComplete(A, L, P) abort
+    try
+        call s:configuration()
+        let xs = split(globpath(g:vimbuild_cwd, 'testdir/test_*.vim'), "\n")
+        call map(xs, { i,x -> fnamemodify(x, ':t:gs!\.vim$!.res!') })
+        return xs
+    catch
+        echohl Error
+        echo v:exception
+        echohl None
+    endtry
+endfunction
+
+command! -nargs=*                                           VimBuild      :call <SID>vimbuild(s:batfile_build, <q-args>)
+command! -nargs=* -complete=customlist,VimBuildTestComplete VimBuildTest  :call <SID>vimbuild(s:batfile_test, <q-args>)
 

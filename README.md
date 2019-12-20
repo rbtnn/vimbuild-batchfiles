@@ -15,10 +15,7 @@ VimBuild x64
 " build vim for x86
 VimBuild x86
 
-" run vim.exe in vim's terminal
-VimBuildVimInTerminal
-
-" run Vim script on current buffer in terminal and call term_dumpwrite()/term_dumpload()
-VimBuildTermDump
+" run a vim's test
+VimBuildTest test_arabic.res
 ```
 
