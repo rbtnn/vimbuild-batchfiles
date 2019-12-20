@@ -1,45 +1,16 @@
 @echo off
 setlocal enabledelayedexpansion
 
-if "%1"=="x86" set BUILD_ARCH=x86
-if "%1"=="x64" set BUILD_ARCH=x64
-if "%BUILD_ARCH%"=="x64" set VIM_CPU=AMD64
-if "%BUILD_ARCH%"=="x86" set VIM_CPU=i386
-if "%BUILD_ARCH%"==""    goto :FINISH
+call "%~dp0\vimbuild_common.bat" %1
+if "%BUILD_ARCH%"=="" goto :FINISH
 
-set INCLUDE=
-set LIBPATH=
-set LIB=
-set PATH=C:\WINDOWS\system32
-set VCVARS=
-set VIMOPT= %~2 %~3 %~4 %~5 %~6 %~7 %~8 %~9
-set CACHE=%~dp0\%BUILD_ARCH%.bat
-
-if exist "%CACHE%" (
-    call "%CACHE%"
-    goto :TEST
-)
-
-if "%VCVARS%"=="" (
-    for /F "usebackq delims==" %%i in (`where /r "%ProgramFiles(x86)%" vcvarsall.bat`) do ( if "%VCVARS%"=="" (set VCVARS=%%i) )
-)
-if "%VCVARS%"=="" (
-    for /F "usebackq delims==" %%i in (`where /r "%ProgramFiles%"      vcvarsall.bat`) do ( if "%VCVARS%"=="" (set VCVARS=%%i) )
-)
-call "%VCVARS%" %BUILD_ARCH%
-
-echo set INCLUDE=%INCLUDE%  > %CACHE%
-echo set LIBPATH=%LIBPATH% >> %CACHE%
-echo set LIB=%LIB%         >> %CACHE%
-echo set PATH=%PATH%       >> %CACHE%
-
-:TEST
 set PATH=%PATH%;C:\Program Files\Git\usr\bin
 
-@echo on
 pushd testdir
     if exist test.log del /Q test.log
-    nmake /nologo /f Make_dos.mak VIMPROG=..\vim %VIMOPT%
+    @echo on
+    nmake /nologo /f Make_dos.mak VIMPROG=..\vim %~2 %~3 %~4 %~5 %~6 %~7 %~8 %~9
+    @echo off
     if exist test.log type test.log
 popd
 
