@@ -22,15 +22,17 @@ if has('win32')
     function! s:vimbuild(batfile, q_args) abort
         try
             call s:configuration()
-            let opt = #{ cwd: expand(g:vimbuild_cwd), }
+            let opt = #{ cwd: expand(g:vimbuild_cwd), curwin: v:true, }
             let xs = split(a:q_args, '\s\+')
             if -1 == index(['x86', 'x64'], get(xs, 0, ''))
                 let xs = ['x86'] + xs
             endif
             if a:batfile == s:batfile_build
+                tabnew
                 call term_start([(a:batfile)] + [xs[0]] + [(g:vimbuild_buildargs)] + [' ' .. join(xs[1:])], opt)
             endif
             if a:batfile == s:batfile_test
+                tabnew
                 call term_start([(a:batfile)] + [xs[0]] + [(g:vimbuild_testargs)] + [' ' .. join(xs[1:])], opt)
             endif
         catch
