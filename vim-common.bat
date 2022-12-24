@@ -4,6 +4,8 @@ if "%1"=="x86" set BUILD_ARCH=x86
 if "%1"=="x64" set BUILD_ARCH=x64
 if "%BUILD_ARCH%"==""    goto :FINISH
 
+set TARGET_VIMDIR=%USERPROFILE%\Desktop\vim
+
 set INCLUDE=
 set LIBPATH=
 set LIB=
@@ -24,9 +26,9 @@ if "%VCVARS%"=="" (
 )
 call "%VCVARS%" %BUILD_ARCH%
 
-echo set INCLUDE=%INCLUDE%  > %CACHE%
-echo set LIBPATH=%LIBPATH% >> %CACHE%
-echo set LIB=%LIB%         >> %CACHE%
-echo set PATH=%PATH%       >> %CACHE%
+echo set INCLUDE=%INCLUDE%> %CACHE%
+echo set LIBPATH=%LIBPATH%>> %CACHE%
+echo set LIB=%LIB%>> %CACHE%
+echo set PATH=%PATH%>> %CACHE%
 
 :FINISH
