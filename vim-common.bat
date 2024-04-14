@@ -9,7 +9,7 @@ set TARGET_VIMDIR=%USERPROFILE%\Desktop\vim
 set INCLUDE=
 set LIBPATH=
 set LIB=
-set PATH=C:\WINDOWS\system32
+set PATH=C:\WINDOWS\system32;C:\Windows\System32\WindowsPowerShell\v1.0
 set VCVARS=
 set CACHE=%~dp0\%BUILD_ARCH%.bat
 
